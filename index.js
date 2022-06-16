@@ -1,14 +1,14 @@
+const bodyParser = require("body-parser");
 const express = require("express");
 const app = express();
 const PORT = 3000;
-const bodyParser = require("body-parser");
 
 // use ejs as a view engine
 app.set("view engine", "ejs");
 // use static files 
 app.use(express.static("public"));
 // configure bodyParser 
-app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.urlencoded({ extended: false })); // false means that the body parser will be just strings 
 app.use(bodyParser.json());
 
 // -------- routes -------- 
