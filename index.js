@@ -4,6 +4,7 @@ const PORT = 3000; // port number
 const bodyParser = require("body-parser"); // import body-parser 
 const connection = require("./database/Database"); // create connection  
 const Perguntas = require("./database/Perguntas"); // create Perguntas database
+const Respostas = require("./database/Respostas"); // create Respostas database
 
 //database connection 
 connection.authenticate()
@@ -12,7 +13,7 @@ connection.authenticate()
 }).catch(() => { 
     console.log("connection error"); 
 }); 
-// Server 
+// Server listen 
 app.listen(PORT, () => {
     console.log("listening on port " + PORT);
 });
@@ -49,22 +50,40 @@ app.post("/salvarPergunta", (req, res) => {
         titulo: titulo,
         descricao: descricao
     }).then(() => {
-    res.redirect("/");
+    res.redirect("/"); 
     });
 });
 
 //------------- Pergunta route -------------
-
-app.get("/pergunta/:id", (res,req) => {
+app.get("/pergunta/:id", (req,res) => {
     var id = req.params.id; // save the params id in the variable id 
     Perguntas.findOne({ // find one field of Perguntas table 
-        where: {id: id} // compare the id of Perguntas table with the id passed by params 
+        where: {id: id}// compare the id of Perguntas table with the id passed by params 
     }).then(pergunta => {
         if(pergunta != undefined){ // pergunta fonded 
-            res.render("pergunta.ejs");
+            Respostas.findAll({
+                where: {perguntaID: pergunta.id},
+                order:[["id","DESC"]]
+            }).then(respostas => {
+                res.render("pergunta.ejs",{
+                    pergunta: pergunta,
+                    respostas: respostas
+                });
+            });
         }else{ //pergunta not found
             res.redirect("/");
         }
     });     
 });
 
+// ------------- SaveResposta route -------------
+app.post("/salvarResposta/:perguntaID", (req, res) => {
+    var perguntaID = req.params.perguntaID; 
+    var corpo = req.body.corpo;
+    Respostas.create({ 
+        perguntaID: perguntaID,
+        corpo: corpo
+    }).then(() => {
+    res.redirect("/pergunta/"+perguntaID);
+    });
+});
